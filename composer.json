@@ -1,5 +1,6 @@
 {
     "name": "jarivas/mysql-models",
+    "version": "1.0.0",
     "description": "A simple and light Mysql model factory",
     "type": "library",
     "license": "MIT",
@@ -9,7 +10,6 @@
         "email": "me@jarivas.work"
       }
     ],
-    "minimum-stability": "dev",
     "autoload": {
       "psr-4": {
         "MysqlModels\\": "src/"
