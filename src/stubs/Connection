@@ -6,10 +6,10 @@ use Exception;
 use PDO;
 
 class Connection {
-    private $host = 'localhost';
-    private $dbname = 'world';
-    private $username = 'mysqlUser';
-    private $password = 'mysqlP455w0rd';
+    private $host = '{{host}}';
+    private $dbname = '{{dbname}}';
+    private $username = '{{username}}';
+    private $password = '{{password}}';
     private $db = null;
     private static $instance = null;
 
