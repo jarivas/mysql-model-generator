@@ -1,12 +1,12 @@
 {
-    "name": "multisafepay/mysql-models",
+    "name": "jarivas/mysql-models",
     "description": "A simple and light Mysql model factory",
     "type": "library",
     "license": "MIT",
     "authors": [
       {
         "name": "Jose A Rivas",
-        "email": "jose.rivas@jmultisafepay.com"
+        "email": "me@jarivas.work"
       }
     ],
     "minimum-stability": "stable",
