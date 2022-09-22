@@ -1,0 +1,256 @@
+<?php declare(strict_types=1);
+
+namespace MysqlModels\Tests\Unit\Models;
+
+use Exception;
+
+abstract class Model
+{
+    use SqlGenerator;
+
+    protected static $columns = [];
+
+    protected $selectedColumns;
+    protected $joins = [];
+    protected $where = [];
+    protected $group = '';
+    protected $having = [];
+    protected $order = '';
+    protected $limit = 100;
+    protected $offset = 0;
+
+    public static function first(array $columnValues): ?self
+    {
+        $new = new static();
+
+        foreach ($columnValues as $column => $value) {
+            $new->where($column, '=', $value);
+        }
+
+        return $new->getOne();
+    }
+
+    public function select(array $columns)
+    {
+        if (empty($columns)) {
+            return;
+        }
+
+        $this->selectedColumns = $columns;
+    }
+
+    public function join(string $type, string $tableName, string $onCol1, string $onCol2)
+    {
+        $this->joins[] = ['type' => $type, 'tableName' => $tableName, 'onCol1' => $onCol1, 'onCol2' => $onCol2];
+    }
+
+    public function where(string $column, string $operator, $value)
+    {
+        $this->where[] = [
+            'condition_operator' => 'AND',
+            'column' => $column,
+            'operator' => $operator,
+            'value' => $value,
+        ];
+    }
+
+    public function whereOr(string $column, string $operator, $value)
+    {
+        $this->where[] = [
+            'condition_operator' => 'OR',
+            'column' => $column,
+            'operator' => $operator,
+            'value' => $value,
+        ];
+    }
+
+    public function having(string $column, string $operator, $value)
+    {
+        $this->having[] = [
+            'condition_operator' => 'AND',
+            'column' => $column,
+            'operator' => $operator,
+            'value' => $value,
+        ];
+    }
+
+    public function havingOr(string $column, string $operator, $value)
+    {
+        $this->having[] = [
+            'condition_operator' => 'OR',
+            'column' => $column,
+            'operator' => $operator,
+            'value' => $value,
+        ];
+    }
+
+    public function order(string $order)
+    {
+        $this->order = $order;
+    }
+
+    public function limit(int $limit)
+    {
+        $this->limit = $limit;
+    }
+
+    public function offset(int $offset)
+    {
+        $this->offset = $offset;
+    }
+
+    public function get()
+    {
+        $cols = static::$columns;
+        $params = [];
+
+        if (isset($this->selectedColumns)) {
+            $cols = $this->selectedColumns;
+
+            unset($this->selectedColumns);
+        }
+
+        $sql = static::generateSelect(
+            $params,
+            $cols,
+            $this->joins,
+            $this->where,
+            $this->group,
+            $this->having,
+            $this->order,
+            $this->limit,
+            $this->offset
+        );
+
+        $this->resetFilters();
+
+        return Connection::getInstance()->get($sql, $params, static::class);
+    }
+
+    public function getOne(): ?self
+    {
+        $this->limit(1);
+
+        $rows = $this->get();
+
+        return empty($rows) ? null : $rows[0];
+    }
+
+    public function hydrate(): bool
+    {
+        $new = null;
+
+        if (empty($this->id)) {
+            if (empty($this->where)) {
+                return false;
+            }
+        } else {
+            $this->resetFilters();
+            $this->where('id', '=', $this->id);
+        }
+
+        $new = $this->first();
+
+        if (! $new) {
+            return false;
+        }
+
+        foreach (static::$columns as $column) {
+            $this->$column = $new->$column;
+        }
+
+        unset($new);
+
+        return true;
+    }
+
+    public function delete(string $pk = 'id'): bool
+    {
+        if (empty($this->$pk)) {
+            return false;
+        }
+
+        $params = [];
+
+        $this->where($pk, '=', $this->$pk);
+
+        $sql = static::generateDelete($params, $this->where);
+
+        unset($this->id);
+
+        $this->resetFilters();
+
+        return (Connection::getInstance()->executeSql($sql, $params) > 0);
+    }
+
+    public function save(string $pk = 'id')
+    {
+        isset($this->$pk) ? $this->update($pk) : $this->insert($pk);
+    }
+
+    public function __toString()
+    {
+        $data = $this->columnsToParams();
+
+        return json_encode($data, JSON_PRETTY_PRINT);
+    }
+
+    protected function columnsToParams(?string $pk = null): array
+    {
+        $params = [];
+
+        foreach (static::$columns as $column) {
+            if (isset($this->$column)) {
+                $params[$column] = $this->$column;
+            }
+        }
+
+        if ($pk && isset($this->$pk)) {
+            unset($params[$pk]);
+        }
+
+        return $params;
+    }
+
+    protected function insert(string $pk = 'id')
+    {
+        $params = $this->columnsToParams($pk);
+        $connection = Connection::getInstance();
+
+        $sql = static::generateInsert($params);
+
+        $connection->executeSql($sql, $params);
+
+        $id = $connection->lastInsertId();
+
+        if (!$id) {
+            throw new Exception('empty lastInsertId');
+        }
+
+        $this->$pk = $id;
+    }
+
+    protected function update(string $pk = 'id')
+    {
+        $params = $this->columnsToParams($pk);
+
+        $this->where($pk, '=', $this->$pk);
+
+        $sql = static::generateUpdate($params, $this->where);
+
+        $this->resetFilters();
+        
+        Connection::getInstance()->executeSql($sql, $params);
+    }
+
+    protected function resetFilters()
+    {
+        $this->joins = [];
+        $this->where = [];
+        $this->group = '';
+        $this->having = [];
+        $this->order = '';
+        $this->limit = 10;
+        $this->offset = 0;
+    }
+}

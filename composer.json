@@ -1,0 +1,32 @@
+{
+    "name": "multisafepay/mysql-models",
+    "description": "A simple and light Mysql model factory",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+      {
+        "name": "Jose A Rivas",
+        "email": "jose.rivas@jmultisafepay.com"
+      }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+      "psr-4": {
+        "MysqlModels\\": "src/"
+      }
+    },
+    "autoload-dev": {
+      "psr-4": {
+        "MysqlModels\\Tests\\": "tests/"
+     }
+    },
+    "require": {
+    },
+    "require-dev": {
+        "vimeo/psalm": "^4.27",
+        "phpunit/phpunit": "^8.5",
+        "phpmd/phpmd": "^2.13",
+        "phpstan/phpstan": "^1.8",
+        "jarivas/php-env": "^1.0"
+    }
+}

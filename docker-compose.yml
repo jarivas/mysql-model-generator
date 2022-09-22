@@ -1,0 +1,14 @@
+version: "2.4"
+services:
+  dev:
+    image: jrivasmsp/php-7.2-mysql:0.01
+    volumes:
+      - .:/projects/workspace
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+      - mysql-models
+    entrypoint: ./projects/workspace/entrypoint.sh
+networks:
+  mysql-models:

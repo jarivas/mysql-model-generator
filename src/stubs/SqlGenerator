@@ -1,0 +1,118 @@
+<?php declare(strict_types=1);
+
+namespace MysqlModels\Tests\Unit\Models;
+
+trait SqlGenerator
+{
+
+    protected static $tableName = '';
+
+    protected static function generateJoins(array $joins): string
+    {
+        $sql = '';
+
+        if (count($joins)) {
+            foreach ($joins as $j)
+                $sql .= sprintf(' %s JOIN %s ON %s = "%s"', $j['type'], $j['tableName'], $j['onCol1'], $j['onCol2']);
+        }
+
+        return $sql;
+    }
+
+    protected static function generateConditions(string $type, array $conditions, array &$params): string
+    {
+        $sql = '';
+
+        if (count($conditions)) {
+            $sql .= " $type 1";
+
+            foreach ($conditions as $c) {
+                $col = $c['column'];
+                $sql .= sprintf(' %s %s %s :%s', $c['condition_operator'], $col, $c['operator'], $col);
+                $params[$col] = $c['value'];
+            }
+        }
+
+        return $sql;
+    }
+
+    public static function generateSelect(
+        array &$params,
+        array $selectedColumns,
+        array $joins = [],
+        array $where = [],
+        string $group = '',
+        array $having = [],
+        string $order = '',
+        int $limit = 1000,
+        int $offset = 0
+    ): string {
+        $sql = 'SELECT ';
+        $tableName = static::$tableName;
+
+        foreach ($selectedColumns as $col)
+            $sql .= $col . ', ';
+
+        $sql = substr_replace($sql, " FROM {$tableName}", strlen($sql) - 2);
+
+        $sql .= self::generateJoins($joins);
+
+        $sql .= self::generateConditions('WHERE', $where, $params);
+
+        if (strlen($group)){
+            $sql .= ' GROUP BY ' . $group;
+        }
+
+        $sql .= self::generateConditions('HAVING', $having, $params);
+
+        if (strlen($order)){
+            $sql .= ' ORDER BY ' . $order;
+        }
+
+        $sql .= sprintf(' LIMIT %d OFFSET %d', $limit, $offset);
+
+        return $sql;
+    }
+
+    public static function generateInsert(array $params): string
+    {
+        $columns = array_keys($params);
+        
+        return sprintf("INSERT INTO %s (%s) VALUES (:%s);", static::$tableName, implode(', ', $columns), implode(', :', $columns));
+    }
+
+    public static function generateUpdate(array &$params, array $where = [], string $order = '', int $limit = 0)
+    {
+        $sql = 'UPDATE ' . static::$tableName . ' SET';
+        $columns = array_keys($params);
+
+        foreach ($columns as $c) {
+            $sql .= " $c = :$c,";
+        }
+
+        $sql = substr($sql, 0, strlen($sql) - 1) . self::generateConditions('WHERE', $where, $params);
+
+        if (strlen($order)) {
+            $sql .= " ORDER BY $order";
+        }
+
+        if ($limit) {
+            $sql .= sprintf(' LIMIT %d', $limit);
+        }
+
+        return $sql;
+    }
+
+    public static function generateDelete(array &$params, array $where = [], string $order = '', int $limit = 0): string
+    {
+        $sql = 'DELETE FROM ' . static::$tableName . self::generateConditions('WHERE', $where, $params);
+
+        if (strlen($order))
+            $sql .= ' ORDER BY ' . $order;
+
+        if ($limit)
+            $sql .= sprintf(' LIMIT %d', $limit);
+
+        return $sql;
+    }
+}
