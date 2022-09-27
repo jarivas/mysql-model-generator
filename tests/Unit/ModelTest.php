@@ -19,11 +19,11 @@ class ModelTest extends TestCase
     public function testGet(): void
     {
         $model = new City();
-        
+
         $model->where('CountryCode', '=', self::COUNTRY_CODE);
 
         $cities = $model->get();
-        
+
         $this->assertIsArray($cities);
 
         $this->assertInstanceOf(City::class, $cities[0]);
@@ -34,7 +34,7 @@ class ModelTest extends TestCase
         $model = new City();
 
         $model->where('Name', '=', self::CITY_NAME);
-        
+
         $city = $model->getOne();
 
         $this->assertNotNull($city);
@@ -117,5 +117,18 @@ class ModelTest extends TestCase
         $city = City::first(['Name' => __FUNCTION__]);
 
         $this->assertEmpty($city);
+    }
+
+    public function testToJson(): void
+    {
+        $city = $this->testCreate();
+        $city->Name = __FUNCTION__;
+
+        $json = json_encode($city);
+        $array = json_decode($json, true);
+
+        $this->assertIsArray($array);
+        $this->assertArrayHasKey('Name', $array);
+        $this->assertSame(__FUNCTION__, $array['Name']);
     }
 }

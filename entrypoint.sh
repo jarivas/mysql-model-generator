@@ -8,7 +8,9 @@ mysql -u root -e "FLUSH PRIVILEGES"
 
 echo "User created"
 
-if [ .git/hooks/pre-commit ]
+cp .env.example .env
+
+if [ -f .git/hooks/pre-commit ]
 then
   rm .git/hooks/pre-commit
 fi

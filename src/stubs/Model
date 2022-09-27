@@ -3,8 +3,9 @@
 namespace {{namespace}};
 
 use Exception;
+use JsonSerializable;
 
-abstract class Model
+abstract class Model implements JsonSerializable
 {
     use SqlGenerator;
 
@@ -195,6 +196,11 @@ abstract class Model
         return json_encode($data, JSON_PRETTY_PRINT);
     }
 
+    public function jsonSerialize()
+    {
+        return $this->columnsToParams();
+    }
+
     protected function columnsToParams(?string $pk = null): array
     {
         $params = [];
@@ -239,7 +245,7 @@ abstract class Model
         $sql = static::generateUpdate($params, $this->where);
 
         $this->resetFilters();
-        
+
         Connection::getInstance()->executeSql($sql, $params);
     }
 
