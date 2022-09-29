@@ -26,10 +26,10 @@ trait SqlGenerator
         if (count($conditions)) {
             $sql .= " $type 1";
 
-            foreach ($conditions as $c) {
+            foreach ($conditions as $i => $c) {
                 $col = $c['column'];
-                $sql .= sprintf(' %s %s %s :%s', $c['condition_operator'], $col, $c['operator'], $col);
-                $params[$col] = $c['value'];
+                $sql .= sprintf(' %s %s %s :%s%s', $c['condition_operator'], $col, $c['operator'], $col, $i);
+                $params["$col$i"] = $c['value'];
             }
         }
 
