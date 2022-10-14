@@ -32,7 +32,7 @@ class Connection {
         if ($stmt->execute($params)) {
             return $stmt->fetchAll(PDO::FETCH_CLASS, $className);
         } else {
-            throw new Exception(implode(', ', $stmt->errorInfo()));
+            throw new Exception($sql.' ' .implode(', ', $stmt->errorInfo()));
         }
     }
 
@@ -41,7 +41,18 @@ class Connection {
         $stmt = $this->db->prepare($sql);
 
         if (!$stmt->execute($params)) {
-            throw new Exception(implode(', ', $stmt->errorInfo()));
+            throw new Exception($sql.' ' .implode(', ', $stmt->errorInfo()));
+        }
+    }
+
+    public function exec(string $sql)
+    {
+        if (!$this->db->exec($sql)) {
+            $error = $this->db->errorInfo();
+
+            if ($error[0] != "00000") {
+                throw new Exception($sql.' ' .implode(', ', $error));
+            }
         }
     }
 
