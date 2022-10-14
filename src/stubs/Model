@@ -137,34 +137,6 @@ abstract class Model implements JsonSerializable
         return empty($rows) ? null : $rows[0];
     }
 
-    public function hydrate(): bool
-    {
-        $new = null;
-
-        if (empty($this->id)) {
-            if (empty($this->where)) {
-                return false;
-            }
-        } else {
-            $this->resetFilters();
-            $this->where('id', '=', $this->id);
-        }
-
-        $new = $this->first();
-
-        if (! $new) {
-            return false;
-        }
-
-        foreach (static::$columns as $column) {
-            $this->$column = $new->$column;
-        }
-
-        unset($new);
-
-        return true;
-    }
-
     public function delete(string $pk = 'id'): bool
     {
         if (empty($this->$pk)) {
