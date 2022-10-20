@@ -5,8 +5,6 @@ namespace {{namespace}};
 trait SqlGenerator
 {
 
-    protected static $tableName = '';
-
     protected static function generateJoins(array $joins): string
     {
         $sql = '';
@@ -48,7 +46,7 @@ trait SqlGenerator
         int $offset = 0
     ): string {
         $sql = 'SELECT ';
-        $tableName = static::$tableName;
+        $tableName = static::TABLE_NAME;
 
         foreach ($selectedColumns as $col)
             $sql .= $col . ', ';
@@ -77,13 +75,13 @@ trait SqlGenerator
     public static function generateInsert(array $params): string
     {
         $columns = array_keys($params);
-        
-        return sprintf("INSERT INTO %s (%s) VALUES (:%s);", static::$tableName, implode(', ', $columns), implode(', :', $columns));
+
+        return sprintf("INSERT INTO %s (%s) VALUES (:%s);", static::TABLE_NAME, implode(', ', $columns), implode(', :', $columns));
     }
 
     public static function generateUpdate(array &$params, array $where = [], string $order = '', int $limit = 0)
     {
-        $sql = 'UPDATE ' . static::$tableName . ' SET';
+        $sql = 'UPDATE ' . static::TABLE_NAME . ' SET';
         $columns = array_keys($params);
 
         foreach ($columns as $c) {
@@ -105,7 +103,7 @@ trait SqlGenerator
 
     public static function generateDelete(array &$params, array $where = [], string $order = '', int $limit = 0): string
     {
-        $sql = 'DELETE FROM ' . static::$tableName . self::generateConditions('WHERE', $where, $params);
+        $sql = 'DELETE FROM ' . static::TABLE_NAME . self::generateConditions('WHERE', $where, $params);
 
         if (strlen($order))
             $sql .= ' ORDER BY ' . $order;

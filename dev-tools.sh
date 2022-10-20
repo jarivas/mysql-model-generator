@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ -f .env ]
 then
@@ -11,11 +11,11 @@ title="Select a tool to execute: 1 => Static Analisys, 2 => Mess Detector, 3 => 
 echo $title
 
 # Operating system names are used here as a data source
-select opt in Larastan Mess PhpCs1 ResetTestDatabase PhpCs2 RunTest Exit
+select opt in Phpstan Mess PhpCs1 ResetTestDatabase PhpCs2 RunTest Exit
 do
 
 case $opt in
-"Larastan")
+"Phpstan")
 ./vendor/bin/phpstan analyse > analisys.log
 echo "Check the analisys on analisys.log"
 break
