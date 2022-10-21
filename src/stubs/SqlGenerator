@@ -25,9 +25,15 @@ trait SqlGenerator
             $sql .= " $type 1";
 
             foreach ($conditions as $i => $c) {
+                $operator = $c['operator'];
                 $col = $c['column'];
-                $sql .= sprintf(' %s %s %s :%s%s', $c['condition_operator'], $col, $c['operator'], $col, $i);
-                $params["$col$i"] = $c['value'];
+
+                if ($operator != 'IN') {
+                    $sql .= sprintf(' %s %s %s :%s%s', $c['condition_operator'], $col, $c['operator'], $col, $i);
+                    $params["$col$i"] = $c['value'];
+                } else {
+                    $sql .= sprintf(' %s %s IN %s', $c['condition_operator'], $col, $c['value']);
+                }
             }
         }
 
