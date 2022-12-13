@@ -261,7 +261,8 @@ class Generation
         while ($index < $max) {
             $table = $tables[$index];
 
-            $fileName = self::toPascalCase($table);
+            $fileName = preg_replace("/[^\w\-\.]/", '', $table);
+            $fileName = self::toPascalCase($fileName);/** @phpstan-ignore-line */
 
             [$columns, $properties] = self::generateColumnsProperties($descs[$table]);/** @phpstan-ignore-line */
 
