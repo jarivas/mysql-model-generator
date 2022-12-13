@@ -229,7 +229,7 @@ class Generation
     protected static function getTableInfo(string $tableName): ?array
     {
         $desc = [];
-        $stmt = self::$connection->query("DESC $tableName");
+        $stmt = self::$connection->query("DESC `$tableName`");
 
         if (!$stmt) {
             return null;
@@ -261,7 +261,7 @@ class Generation
         while ($index < $max) {
             $table = $tables[$index];
 
-            $fileName = preg_replace("/[^\w\-\.]/", '', $table);
+            $fileName = preg_replace("/[^\w_]/", '', $table);
             $fileName = self::toPascalCase($fileName);/** @phpstan-ignore-line */
 
             [$columns, $properties] = self::generateColumnsProperties($descs[$table]);/** @phpstan-ignore-line */
